@@ -625,3 +625,55 @@ body {
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
 }
+
+.deck-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.deck-card {
+  display: flex;
+  align-items: stretch;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.deck-card.active {
+  border-color: rgba(129, 140, 248, 0.55);
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.25);
+}
+
+.deck-card-main {
+  flex: 1;
+  text-align: left;
+  padding: 0.9rem 1rem;
+  min-width: 0;
+}
+
+.deck-card-title {
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.deck-card-meta {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.deck-card-delete {
+  padding: 0 0.85rem;
+  font-size: 0.75rem;
+  color: #f9a8d4;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.deck-card-delete:hover {
+  background: rgba(244, 114, 182, 0.12);
+}

@@ -3,14 +3,23 @@ import { initFlashcards, setFlashcardWords, resetFlashcards } from './flashcards
 import { initQuiz, setQuizWords, resetQuiz } from './quiz.js';
 import { initMatch, setMatchWords, resetMatch } from './match.js';
 import { initList, setListWords, renderList } from './list.js';
+import {
+  addDeck,
+  deleteDeck,
+  formatDeckDate,
+  getActiveDeckId,
+  loadDecks,
+  migrateLegacyWords,
+  openDeck,
+} from './decks.js';
 
 const STORAGE_KEY = 'kelime_detoks_gemini_key';
-const WORDS_KEY = 'kelime_detoks_words';
 const MAX_IMAGES = 5;
 
 let currentImages = [];
 let words = [];
 let currentMode = 'flashcards';
+let activeDeckId = '';
 
 const $ = (id) => document.getElementById(id);
 
@@ -20,6 +29,7 @@ function init() {
   bindUpload();
   bindApiKey();
   bindAnalyze();
+  bindDecks();
   bindModeTabs();
   initFlashcards(speak);
   initQuiz();
@@ -34,14 +44,11 @@ function loadApiKey() {
 }
 
 function loadSavedWords() {
-  try {
-    const saved = localStorage.getItem(WORDS_KEY);
-    if (saved) {
-      words = JSON.parse(saved);
-      if (words.length) showLearningPlatform();
-    }
-  } catch {
-    /* ignore */
+  const decks = migrateLegacyWords();
+  const active = decks.find((deck) => deck.id === getActiveDeckId()) || decks[0];
+  renderDecks();
+  if (active) {
+    applyDeck(active, { persist: false });
   }
 }
 
@@ -173,9 +180,9 @@ function bindAnalyze() {
       if (!result.length) {
         throw new Error('Görsellerde İngilizce kelime bulunamadı. Farklı görseller deneyin.');
       }
-      applyWords(result);
+      applyDeck(addDeck(result));
       localStorage.setItem(STORAGE_KEY, apiKey);
-      flashMessage(`${result.length} kelime başarıyla çıkarıldı!`);
+      flashMessage(`${result.length} kelime kaydedildi. Önceki setleriniz listede duruyor.`);
     } catch (err) {
       showError(err.message || 'Analiz sırasında bir hata oluştu.');
     } finally {
@@ -184,22 +191,113 @@ function bindAnalyze() {
   });
 }
 
-function applyWords(data) {
-  words = data;
-  localStorage.setItem(WORDS_KEY, JSON.stringify(words));
-  showLearningPlatform();
+function applyDeck(deck, { persist = true } = {}) {
+  if (!deck?.words?.length) return;
+  words = deck.words;
+  activeDeckId = deck.id;
+  if (persist) {
+    openDeck(deck.id);
+  }
+  showLearningPlatform(deck);
+  renderDecks();
 }
 
-function showLearningPlatform() {
+function showLearningPlatform(deck) {
   $('learningSection').classList.remove('hidden');
   $('wordCountBadge').classList.remove('hidden');
   $('wordCountBadge').textContent = `${words.length} kelime`;
+  $('activeDeckTitle').textContent = deck
+    ? `${deck.title} · ${formatDeckDate(deck.createdAt)}`
+    : '';
 
   setFlashcardWords(words);
   setQuizWords(words);
   setMatchWords(words);
   setListWords(words);
   switchMode(currentMode);
+}
+
+function hideLearningPlatform() {
+  words = [];
+  activeDeckId = '';
+  $('learningSection').classList.add('hidden');
+  $('wordCountBadge').classList.add('hidden');
+  $('activeDeckTitle').textContent = '';
+}
+
+function bindDecks() {
+  $('decksList').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-deck-action]');
+    if (!button) return;
+
+    const { deckAction, deckId } = button.dataset;
+    if (deckAction === 'open') {
+      const deck = openDeck(deckId);
+      if (deck) {
+        applyDeck(deck, { persist: false });
+        $('learningSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      return;
+    }
+
+    if (deckAction === 'delete') {
+      if (!window.confirm('Bu kelime setini silmek istiyor musunuz?')) return;
+      const next = deleteDeck(deckId);
+      if (next) applyDeck(next, { persist: false });
+      else hideLearningPlatform();
+      renderDecks();
+      flashMessage('Kelime seti silindi.');
+    }
+  });
+}
+
+function renderDecks() {
+  const decks = loadDecks();
+  const section = $('decksSection');
+  const list = $('decksList');
+  $('decksCount').textContent = decks.length ? `${decks.length} set` : '';
+
+  if (!decks.length) {
+    section.classList.add('hidden');
+    list.innerHTML = '';
+    return;
+  }
+
+  section.classList.remove('hidden');
+  list.replaceChildren(
+    ...decks.map((deck) => {
+      const card = document.createElement('article');
+      card.className = `deck-card${deck.id === activeDeckId ? ' active' : ''}`;
+
+      const body = document.createElement('button');
+      body.type = 'button';
+      body.className = 'deck-card-main';
+      body.dataset.deckAction = 'open';
+      body.dataset.deckId = deck.id;
+
+      const title = document.createElement('p');
+      title.className = 'deck-card-title';
+      title.textContent = deck.title;
+
+      const meta = document.createElement('p');
+      meta.className = 'deck-card-meta';
+      meta.textContent = `${deck.words.length} kelime · ${formatDeckDate(deck.createdAt)}`;
+
+      body.append(title, meta);
+
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'deck-card-delete';
+      remove.dataset.deckAction = 'delete';
+      remove.dataset.deckId = deck.id;
+      remove.title = 'Seti sil';
+      remove.setAttribute('aria-label', 'Seti sil');
+      remove.textContent = 'Sil';
+
+      card.append(body, remove);
+      return card;
+    })
+  );
 }
 
 function bindModeTabs() {

@@ -99,7 +99,11 @@
               <button type="button" id="saveKeyBtn" class="text-xs px-2 py-1 rounded-lg bg-accent/20 text-accent-light hover:bg-accent/30 transition">Kaydet</button>
             </div>
           </div>
-          <p class="text-xs text-slate-500 mt-2">Anahtarınız yalnızca tarayıcınızda (localStorage) saklanır.</p>
+          <p class="text-xs text-slate-500 mt-2">
+            gemini.google.com / Gemini Pro aboneliği yetmez.
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="text-accent-light hover:underline">Google AI Studio</a>
+            üzerinden <strong>AIza</strong> ile başlayan bir API anahtarı alın. Anahtar yalnızca tarayıcınızda saklanır.
+          </p>
         </div>
 
         <!-- Image Upload -->
@@ -158,8 +162,22 @@
       <div id="errorState" class="hidden mt-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm"></div>
     </section>
 
+    <section id="decksSection" class="glass-panel rounded-2xl p-5 sm:p-6 mb-6 hidden">
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-4">
+        <div>
+          <h2 class="font-display text-lg font-bold text-white">Kayıtlı kelime setleri</h2>
+          <p class="text-sm text-slate-400 mt-0.5">Önceki kartlarınız bu tarayıcıda saklanır. Yeni analiz eskileri silmez.</p>
+        </div>
+        <span id="decksCount" class="text-xs text-slate-500"></span>
+      </div>
+      <div id="decksList" class="deck-list"></div>
+    </section>
+
     <!-- Learning Platform (hidden until words loaded) -->
     <section id="learningSection" class="hidden">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <p id="activeDeckTitle" class="text-sm text-slate-400 truncate"></p>
+      </div>
       <!-- Mode Tabs -->
       <nav class="glass-panel rounded-2xl p-2 mb-6 flex flex-wrap gap-2">
         <button type="button" data-mode="flashcards" class="mode-tab active">

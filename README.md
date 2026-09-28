@@ -6,7 +6,7 @@ Görseldeki İngilizce kelime listesini **Gemini API (Multimodal)** ile otomatik
 
 - Gemini API Key girişi (localStorage'da saklanır)
 - Sürükle-bırak çoklu görsel yükleme (en fazla 5 görsel)
-- `gemini-3.7-flash` ile structured JSON çıktı (otomatik yedek modeller: `gemini-3.6-flash`, `gemini-3.5-flash`)
+- Gemini API ile structured JSON çıktı (önce `gemini-3.5-flash-lite` / `gemini-2.5-flash`, yoğunlukta yedek: `gemini-3.5-flash`, `gemini-3.7-flash`)
 - **Kelime Kartları** — 3D flip card + TTS
 - **Quiz / Test** — 4 şıklı, anlık geri bildirim, skor tablosu
 - **Eşleştirme Oyunu** — İngilizce ↔ Türkçe eşleştirme
@@ -14,7 +14,7 @@ Görseldeki İngilizce kelime listesini **Gemini API (Multimodal)** ile otomatik
 
 ## Kurulum & Çalıştırma
 
-1. [Google AI Studio](https://aistudio.google.com/apikey) üzerinden Gemini API anahtarı alın.
+1. [Google AI Studio](https://aistudio.google.com/apikey) üzerinden Gemini **API** anahtarı alın (`AIza...`). gemini.google.com’daki Gemini Pro sohbet aboneliği bu uygulamaya bağlanmaz ve API kotasını artırmaz.
 2. Projeyi bir yerel sunucu ile açın (ES modülleri için gerekli):
 
 ```bash
